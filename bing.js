@@ -13,7 +13,7 @@ request(requrl, function (error, response, body) {
 });
 
 function save(data){
-	fs.writeFile('input2.html', data,  function(err) {
+	fs.writeFile('input.html', data,  function(err) {
 	   if (err) {
 	       return console.error(err);
 	   }
@@ -41,22 +41,20 @@ var downloadImg = function(uri, filename, callback){
 	        console.log('err: '+ err);
 	        return false;
 	    }
-        fs.readdir("images2/",function(errR){
+        fs.readdir("images/",function(errR){
             if (errR) {
-                if(errR.errno == -4058){
-                    fs.mkdir("images2/",function(errM){
+                if(errR.errno == -4058){    //没有images目录
+                    fs.mkdir("images/",function(errM){
                         if (errM) {
                             return console.error(errM);
                         }
                         console.log("mkdir complete");
-                        request(uri).pipe(fs.createWriteStream('images2/'+filename)).on('close', callback);  //调用request的管道来下载到 images文件夹下
                     });
                 }else{
                     return console.error(errR);
                 }
-            }else{
-                request(uri).pipe(fs.createWriteStream('images2/'+filename)).on('close', callback);  //调用request的管道来下载到 images文件夹下
             }
+            request(uri).pipe(fs.createWriteStream('images/'+filename)).on('close', callback);  //调用request的管道来下载到 images文件夹下
         });
     });
 };
