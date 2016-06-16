@@ -66,6 +66,7 @@ function reqImgJson(jsonUrl){
         if (!error && response.statusCode == 200) {
             // console.log(body);    //返回请求页面的HTML
             var json = JSON.parse(body);
+            //如果不是请求当月的，json会返回null
             if(json){
                 saveImg(json.images[0].url, json.images[0].enddate);
             }else{
@@ -110,7 +111,8 @@ function differToday(sd, ed){
         ed0 = new Date(ed.getFullYear(), ed.getMonth(), ed.getDate(), 0, 0, 0),
         sms = sd0.getTime(),
         ems = ed0.getTime();
-    if(sms < today.setDate(1)){
+    var firstDate = new Date(today.getFullYear(), today.getMonth(), 1, 0, 0, 0);
+    if(sms < firstDate.getTime()){
         console.error("------开始时间不能大于当月1号");
         return null;
     }
@@ -124,10 +126,10 @@ function differToday(sd, ed){
     }
     var sDay = parseInt((tms - sms) / (1000 * 60 * 60 * 24));
     var eDay = parseInt((tms - ems) / (1000 * 60 * 60 * 24));
-    //if(sDay - eDay > 30){
-    //    console.error("------结束时间与开始时间相差不能多于30天");
-    //    return null;
-    //}
+    // if(sDay - eDay > 30){
+    //     console.error("------结束时间不能与开始时间相差30天");
+    //     return null;
+    // }
     return {
         "sDay" : sDay,
         "eDay" : eDay
