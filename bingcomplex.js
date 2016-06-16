@@ -17,14 +17,13 @@ var cheerio = require('cheerio');
 var fs = require("fs");
 var path = require('path');
 
-var startDate = new Date("2016-06-10"),
+var startDate = new Date("2016-06-01"),
     endDate = new Date("2016-06-16");
 
 (function(){
     var sDay = 0,
         eDay = 0;
     var daysObj = differToday(startDate, endDate);
-    // console.log(daysObj)
     if(daysObj){
         sDay = daysObj.sDay;
         eDay = daysObj.eDay;
@@ -40,11 +39,26 @@ var startDate = new Date("2016-06-10"),
             'pid=hp',
             'video=1'
         ];
-    for(var i = sDay; i >= eDay; i--){
-        params[1] = 'idx=' + i;
-        params[3] = 'nc=' + (new Date()).getTime();
-        reqImgJson(requrl + params.join('&'));
-    }
+    //检测创建目录
+    fs.readdir("images/",function(errR){
+        if (errR) {
+            if(errR.errno == -4058){    //没有images目录
+                fs.mkdir("images/",function(errM){
+                    if (errM) {
+                        return console.error(errM);
+                    }
+                    console.log("mkdir complete");
+                });
+            }else{
+                return console.error(errR);
+            }
+        }
+        for(var i = sDay; i >= eDay; i--){
+            params[1] = 'idx=' + i;
+            params[3] = 'nc=' + (new Date()).getTime();
+            reqImgJson(requrl + params.join('&'));
+        }
+    });
 })();
 
 function reqImgJson(jsonUrl){
@@ -52,18 +66,26 @@ function reqImgJson(jsonUrl){
         if (!error && response.statusCode == 200) {
             // console.log(body);    //返回请求页面的HTML
             var json = JSON.parse(body);
-            saveImg(json.images[0].url);
+            saveImg(json.images[0].url, json.images[0].enddate);
         }
     });
 }
 
-function saveImg(imgUrl){
-    var filename = path.basename(imgUrl);
-    downloadImg(imgUrl,filename,function() {
-        // console.log(filename + ' done');
+function saveImg(imgUrl, curdate){
+    var filename = curdate + "-" +path.basename(imgUrl);
+    //若已经存在则跳过
+    fs.stat('images/'+filename, function (err, stats) {
+        if(err){
+            if(err.errno == -4058){    //没有该天壁纸
+                downloadImg(imgUrl,filename,function() {
+                    // console.log(filename + ' done');
+                });
+            }else{
+                return console.error(err);
+            }
+        }
     });
 }
-
 
 var downloadImg = function(uri, filename, callback){
     request.head(uri, function(err, res, body){
@@ -89,25 +111,26 @@ var downloadImg = function(uri, filename, callback){
     });
 };
 
+//计算距离今天的天数
 function differToday(sd, ed){
     var today = new Date(),
         tms = today.getTime();
-    if(ems > tms){
-        console.error("------结束时间不能大于今天");
-        return null;
-    }
     var sd0 = new Date(sd.getFullYear(), sd.getMonth(), sd.getDate(), 0, 0, 0),
         ed0 = new Date(ed.getFullYear(), ed.getMonth(), ed.getDate(), 0, 0, 0),
         sms = sd0.getTime(),
         ems = ed0.getTime();
+    if(ems > tms){
+        console.error("------结束时间不能大于今天");
+        return null;
+    }
     if(sms > ems){
         console.error("------结束时间不能小于开始时间");
         return null;
     }
     var sDay = parseInt((tms - sms) / (1000 * 60 * 60 * 24));
     var eDay = parseInt((tms - ems) / (1000 * 60 * 60 * 24));
-    if(eDay - sDay > 365){
-        console.error("------结束时间不能与开始时间相差365天");
+    if(sDay - eDay > 30){
+        console.error("------结束时间不能与开始时间相差30天");
         return null;
     }
     return {
