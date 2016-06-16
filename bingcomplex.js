@@ -124,10 +124,10 @@ function differToday(sd, ed){
     }
     var sDay = parseInt((tms - sms) / (1000 * 60 * 60 * 24));
     var eDay = parseInt((tms - ems) / (1000 * 60 * 60 * 24));
-    if(sDay - eDay > 30){
-        console.error("------结束时间不能与开始时间相差30天");
-        return null;
-    }
+    //if(sDay - eDay > 30){
+    //    console.error("------结束时间与开始时间相差不能多于30天");
+    //    return null;
+    //}
     return {
         "sDay" : sDay,
         "eDay" : eDay
