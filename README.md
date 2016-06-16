@@ -14,6 +14,9 @@
 添加时间区间功能，bingcomplex.js
 
 直接修改js里下面两个变量的值
+
 var startDate = new Date("2016-06-10"),
+
     endDate = new Date("2016-06-16");
+    
 然后执行node bingcomplex.js就可以下载对应日期的必应壁纸
