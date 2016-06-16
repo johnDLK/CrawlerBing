@@ -66,7 +66,11 @@ function reqImgJson(jsonUrl){
         if (!error && response.statusCode == 200) {
             // console.log(body);    //返回请求页面的HTML
             var json = JSON.parse(body);
-            saveImg(json.images[0].url, json.images[0].enddate);
+            if(json){
+                saveImg(json.images[0].url, json.images[0].enddate);
+            }else{
+                console.log("json返回null...服务器调皮了，请稍后再试")
+            }
         }
     });
 }
@@ -93,21 +97,8 @@ var downloadImg = function(uri, filename, callback){
 	        console.log('err: '+ err);
 	        return false;
 	    }
-        fs.readdir("images/",function(errR){
-            if (errR) {
-                if(errR.errno == -4058){    //没有images目录
-                    fs.mkdir("images/",function(errM){
-                        if (errM) {
-                            return console.error(errM);
-                        }
-                        console.log("mkdir complete");
-                    });
-                }else{
-                    return console.error(errR);
-                }
-            }
-            request(uri).pipe(fs.createWriteStream('images/'+filename)).on('close', callback);  //调用request的管道来下载到 images文件夹下
-        });
+        //调用request的管道来下载到 images文件夹下
+        request(uri).pipe(fs.createWriteStream('images/'+filename)).on('close', callback);
     });
 };
 
@@ -119,6 +110,10 @@ function differToday(sd, ed){
         ed0 = new Date(ed.getFullYear(), ed.getMonth(), ed.getDate(), 0, 0, 0),
         sms = sd0.getTime(),
         ems = ed0.getTime();
+    if(sms < today.setDate(1)){
+        console.error("------开始时间不能大于当月1号");
+        return null;
+    }
     if(ems > tms){
         console.error("------结束时间不能大于今天");
         return null;
